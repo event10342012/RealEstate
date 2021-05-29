@@ -42,21 +42,26 @@ def rc2ad(x):
 
 
 def output_json(df):
+    # select city, date, district, building_state
     df = df.withColumn('city', df['土地區段位置建物區段門牌'].substr(1, 3)) \
         .withColumn('date', rc2ad(df['交易年月日'])) \
         .withColumnRenamed('鄉鎮市區', 'district') \
         .withColumnRenamed('建物型態', 'building_state') \
         .select('city', 'date', 'district', 'building_state')
+    # sort date
     df = df.sort(df.city.asc(), df.date.desc())
+    # make events
     df = df.withColumn('events', struct(df.district, df.building_state))
-    df = df.groupby('city', 'date').agg(collect_list(df.events)) \
+    df = df.groupby('city', 'date')\
+        .agg(collect_list(df.events)) \
         .withColumnRenamed('collect_list(events)', 'events')
+    # make time_slots
     df = df.withColumn('time_slots', struct(df.date, df.events)) \
         .select('city', 'time_slots') \
         .groupby('city') \
         .agg(collect_list('time_slots')) \
         .withColumnRenamed('collect_list(time_slots)', 'time_slots')
-    return df
+    df.repartition(2, 'city').write.json('result', mode='overwrite')
 
 
 if __name__ == '__main__':
@@ -64,4 +69,4 @@ if __name__ == '__main__':
     dfs = load_dataset(spark)
     df = merge_dataset(dfs)
     df = filter_dataset(df)
-    df = output_json(df)
+    output_json(df)
