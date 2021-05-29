@@ -52,7 +52,7 @@ def download_real_estate(url, download_dir, target_cities, driver_path):
     driver.close()
 
 
-if __name__ == '__main__':
+def main():
     root = Path(__file__).parents[1]
     data_dir = os.path.join(root, 'data')
     chrome_driver_path = os.path.join(root, 'libs', 'chromedriver')
@@ -64,3 +64,7 @@ if __name__ == '__main__':
                          download_dir=data_dir,
                          target_cities=check_cities,
                          driver_path=chrome_driver_path)
+
+
+if __name__ == '__main__':
+    main()

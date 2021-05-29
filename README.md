@@ -10,3 +10,9 @@
 ```shell
 $ pip install -r requirements.txt
 ```
+
+4. 執行爬蟲程式
+
+```shell
+$ python3 ./src/real_estate_crawler.py ./libs/{chromedriver}
+```
