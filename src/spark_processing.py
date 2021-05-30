@@ -9,10 +9,9 @@ from pyspark.sql.types import StringType, IntegerType
 
 
 # question 2
-def load_dataset(spark_session):
-    root = Path(__file__).parents[1]
+def load_dataset(spark_session, data_dir):
     file_list = ['A_lvr_land_A.csv', 'B_lvr_land_A.csv', 'E_lvr_land_A.csv', 'F_lvr_land_A.csv', 'H_lvr_land_A.csv']
-    return [spark_session.read.csv(os.path.join(root, 'data', file), header=True) for file in file_list]
+    return [spark_session.read.csv(os.path.join(data_dir, file), header=True) for file in file_list]
 
 
 # question 3
@@ -20,17 +19,18 @@ def merge_dataset(datasets):
     return reduce(DataFrame.unionAll, datasets)
 
 
-def filter_dataset(df):
-    @udf(returnType=IntegerType())
-    def floor_transform(x):
-        if x is not None:
-            res = cn2an.transform(x)
-            return int(res[:-1])
-        return 0
+@udf(returnType=IntegerType())
+def floor_transform(x):
+    if x is not None:
+        res = cn2an.transform(x)
+        return int(res[:-1])
+    return 0
 
-    df = df.filter(df['主要用途'] == '住家用'). \
-        filter(df['建物型態'].substr(1, 4) == '住宅大樓'). \
-        filter(floor_transform(df['總樓層數']) >= 13)
+
+def filter_dataset(df):
+    df = df.filter(df['主要用途'] == '住家用') \
+        .filter(df['建物型態'].substr(1, 4) == '住宅大樓') \
+        .filter(floor_transform(df['總樓層數']) >= 13)
     return df
 
 
@@ -41,7 +41,7 @@ def rc2ad(x):
     return '-'.join(date)
 
 
-def output_json(df):
+def output_json(df, output_path):
     # select city, date, district, building_state
     df = df.withColumn('city', df['土地區段位置建物區段門牌'].substr(1, 3)) \
         .withColumn('date', rc2ad(df['交易年月日'])) \
@@ -52,7 +52,7 @@ def output_json(df):
     df = df.sort(df.city.asc(), df.date.desc())
     # make events
     df = df.withColumn('events', struct(df.district, df.building_state))
-    df = df.groupby('city', 'date')\
+    df = df.groupby('city', 'date') \
         .agg(collect_list(df.events)) \
         .withColumnRenamed('collect_list(events)', 'events')
     # make time_slots
@@ -61,12 +61,20 @@ def output_json(df):
         .groupby('city') \
         .agg(collect_list('time_slots')) \
         .withColumnRenamed('collect_list(time_slots)', 'time_slots')
-    df.repartition(2, 'city').write.json('result', mode='overwrite')
+    df.repartition(2, 'city').write.json(output_path, mode='overwrite')
+
+
+def main():
+    root = Path(__file__).parents[1]
+    input_dir = os.path.join(root, 'data', 'raw')
+    output_dir = os.path.join(root, 'data', 'result')
+
+    spark = SparkSession.builder.getOrCreate()
+    dfs = load_dataset(spark, input_dir)
+    df = merge_dataset(dfs)
+    df = filter_dataset(df)
+    output_json(df, output_dir)
 
 
 if __name__ == '__main__':
-    spark = SparkSession.builder.getOrCreate()
-    dfs = load_dataset(spark)
-    df = merge_dataset(dfs)
-    df = filter_dataset(df)
-    output_json(df)
+    main()

@@ -54,7 +54,7 @@ def download_real_estate(url, download_dir, target_cities, driver_path):
 
 def main():
     root = Path(__file__).parents[1]
-    data_dir = os.path.join(root, 'data')
+    data_dir = os.path.join(root, 'data', 'raw')
     chrome_driver_path = os.path.join(root, 'libs', 'chromedriver')
 
     real_estate_url = 'http://plvr.land.moi.gov.tw/DownloadOpenData'
