@@ -8,7 +8,8 @@ from selenium.webdriver.support.ui import Select
 import typer
 
 
-def download_real_estate(url, download_dir, target_cities, driver_path):
+# question 1
+def download_real_estate(url: str, download_dir: str, target_cities: list, driver_path: str):
     chrome_option = ChromeOptions()
     chrome_option.add_experimental_option('prefs', {'download.default_directory': download_dir})
     driver = Chrome(executable_path=driver_path, options=chrome_option)
