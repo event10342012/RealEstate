@@ -61,6 +61,7 @@ def output_json(df, output_path):
         .groupby('city') \
         .agg(collect_list('time_slots')) \
         .withColumnRenamed('collect_list(time_slots)', 'time_slots')
+    # output json
     df.repartition(2, 'city').write.json(output_path, mode='overwrite')
 
 
