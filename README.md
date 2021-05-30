@@ -19,7 +19,7 @@ $ pip install -r requirements.txt
 $ python3 /{project_path}/src/real_estate_crawler.py
 ```
 
-5. 執行spark處理並輸出結果到 ./data/results
+5. 執行spark處理並輸出結果到 ./data/result
 ```shell
 $ python3 /{project_path}/src/spark_processing.py
 ```
