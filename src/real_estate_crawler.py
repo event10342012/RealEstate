@@ -3,13 +3,13 @@ import time
 import zipfile
 from pathlib import Path
 
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.support.ui import Select
+import typer
 
 
 def download_real_estate(url, download_dir, target_cities, driver_path):
-    chrome_option = Options()
+    chrome_option = ChromeOptions()
     chrome_option.add_experimental_option('prefs', {'download.default_directory': download_dir})
     driver = Chrome(executable_path=driver_path, options=chrome_option)
 
@@ -52,10 +52,10 @@ def download_real_estate(url, download_dir, target_cities, driver_path):
     driver.close()
 
 
-def main():
+def main(chrome_driver_path: str = None):
     root = Path(__file__).parents[1]
     data_dir = os.path.join(root, 'data', 'raw')
-    chrome_driver_path = os.path.join(root, 'libs', 'chromedriver')
+    chrome_driver_path = chrome_driver_path or os.path.join(root, 'libs', 'chromedriver')
 
     real_estate_url = 'http://plvr.land.moi.gov.tw/DownloadOpenData'
     check_cities = ['臺北市', '新北市', '桃園市', '臺中市', '高雄市']
@@ -67,4 +67,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    typer.run(main)

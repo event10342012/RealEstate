@@ -14,5 +14,12 @@ $ pip install -r requirements.txt
 4. 執行爬蟲程式
 
 ```shell
-$ python3 ./src/real_estate_crawler.py ./libs/{chromedriver}
+# use absolute path instead of relative, otherwise download directory would be difference
+# add --chrome-driver-path argus, if your chrome driver path is difference
+$ python3 /{project_path}/src/real_estate_crawler.py
+```
+
+5. 執行spark處理並輸出結果到 ./data/results
+```shell
+$ python3 /{project_path}/src/spark_processing.py
 ```
